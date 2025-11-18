@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRUD — Sebastián Guarín</title>
+
+  <!-- BOOTSTRAP -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #020617;
+      --bg-soft: #0f172a;
+      --card: #020617;
+      --accent: #38bdf8;   /* color principal cambiado */
+      --accent-soft: rgba(56,189,248,0.12);
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border-soft: #1f2933;
+    }
+
+    *{
+      box-sizing: border-box;
+    }
+
+    body{
+      min-height: 100vh;
+      margin: 0;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background: radial-gradient(circle at top left,#0f172a 0,#020617 45%,#000000 100%);
+      color: var(--text-main);
+      display: flex;
+      align-items: stretch;
+      padding: 32px 16px;
+    }
+
+    .shell{
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .brand-card{
+      background: linear-gradient(135deg,rgba(56,189,248,0.18),rgba(37,99,235,0.16));
+      border-radius: 24px;
+      padding: 24px 24px 20px;
+      border: 1px solid rgba(148,163,184,0.4);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 55px rgba(15,23,42,0.9);
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.7);
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(56,189,248,0.45);
+    }
+
+    .brand-pill span.dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(56,189,248,0.8);
+    }
+
+    h1{
+      font-size: clamp(1.7rem, 2.4vw, 2.1rem);
+      margin: 10px 0 6px;
+      font-weight: 650;
+      letter-spacing: .02em;
+    }
+
+    h1 span.name{
+      color: #ffffff;
+    }
+
+    h1 span.surname{
+      color: var(--accent);
+    }
+
+    .subtitle{
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 580px;
+    }
+
+    .pill-row{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      font-size: 0.78rem;
+    }
+
+    .pill-row .pill{
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      color: var(--text-muted);
+      background: rgba(15,23,42,0.85);
+    }
+
+    .layout{
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 960px){
+      body{
+        padding: 18px 10px 24px;
+      }
+      .layout{
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
+    .card{
+      border-radius: 20px;
+      background: radial-gradient(circle at top left,rgba(15,23,42,0.6) 0,rgba(15,23,42,0.95) 45%,#020617 100%);
+      border: 1px solid var(--border-soft);
+      padding: 18px 18px 16px;
+      box-shadow: 0 14px 38px rgba(15,23,42,0.8);
+    }
+
+    .card-title{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .card-title h2{
+      font-size: 1rem;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .badge-soft{
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(56,189,248,0.5);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-soft span.dot{
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .card small{
+      color: var(--text-muted);
+      font-size: .78rem;
+    }
+
+    label.form-label{
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .form-control, .form-select{
+      background-color: rgba(15,23,42,0.85);
+      border: 1px solid rgba(148,163,184,0.5);
+      color: var(--text-main);
+      font-size: 0.86rem;
+      padding: 7px 10px;
+      border-radius: 10px;
+    }
+
+    .form-control:focus, .form-select:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.45);
+      background-color: rgba(15,23,42,0.95);
+      color: #fff;
+    }
+
+    .btn-main{
+      background: linear-gradient(135deg,#38bdf8,#0ea5e9);
+      border: none;
+      color: #0b1120;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 7px 18px;
+      border-radius: 999px;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.9);
+    }
+
+    .btn-main:hover{
+      filter: brightness(1.05);
+      color: #020617;
+    }
+
+    .btn-outline{
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.8);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      background: transparent;
+    }
+
+    .btn-outline:hover{
+      background: rgba(15,23,42,0.9);
+      color: #e5e7eb;
+    }
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    thead{
+      background: rgba(15,23,42,0.9);
+    }
+
+    thead th{
+      padding: 7px 8px;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border-soft);
+      white-space: nowrap;
+    }
+
+    tbody tr:nth-child(even){
+      background: rgba(15,23,42,0.85);
+    }
+
+    tbody tr:nth-child(odd){
+      background: rgba(15,23,42,0.65);
+    }
+
+    tbody td{
+      padding: 6px 8px;
+      border-bottom: 1px solid #020617;
+      vertical-align: middle;
+    }
+
+    .table-wrapper{
+      max-height: 380px;
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+    }
+
+    .chip-id{
+      font-size: 0.78rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.6);
+      color: var(--text-muted);
+    }
+
+    .badge-tag{
+      font-size: 0.74rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      padding: 1px 8px;
+      color: var(--text-muted);
+    }
+
+    .actions button{
+      border-radius: 999px;
+      border: none;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      margin-right: 4px;
+    }
+
+    .btn-edit{
+      background: rgba(56,189,248,0.16);
+      color: var(--accent);
+    }
+
+    .btn-delete{
+      background: rgba(248,113,113,0.14);
+      color: #fca5a5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="brand-card">
+    <div class="brand-pill">
+      <span class="dot"></span>
+      CRUD • Spring Boot + H2
+    </div>
+    <h1>
+      <span class="name">Proyecto CRUD</span>
+      <span class="surname">Sebastián Guarín</span>
+    </h1>
+    <p class="subtitle">
+      Registro de estudiantes desarrollado en Java Spring Boot, API REST y base de datos en memoria H2.
+      Diseño, campos y colores actualizados para que sea totalmente diferente al de Edwing.
+    </p>
+    <div class="pill-row">
+      <div class="pill">API: <strong>/api/sebastian</strong></div>
+      <div class="pill">Base de datos: H2 (auto-update)</div>
+      <div class="pill">Frontend: HTML + Bootstrap 5</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- FORMULARIO -->
+    <div class="card">
+      <div class="card-title">
+        <h2>Formulario de registro</h2>
+        <div class="badge-soft">
+          <span class="dot"></span>
+          Nuevo / Editar estudiante
+        </div>
+      </div>
+      <small>Completa los datos y haz clic en <strong>Guardar</strong>.</small>
+
+      <form id="wendyForm" class="mt-3" onsubmit="guardar(event)">
+        <input type="hidden" id="id">
+
+        <div class="row g-2">
+          <div class="col-md-6 mb-2">
+            <label class="form-label">Nombres</label>
+            <input type="text" id="nombres" class="form-control" required>
+          </div>
+          <div class="col-md-6 mb-2">
+            <label class="form-label">Apellidos</label>
+            <input type="text" id="apellidos" class="form-control" required>
+          </div>
+
+          <div class="col-md-4 mb-2">
+            <label class="form-label">Tipo de documento</label>
+            <select id="tipoDocumento" class="form-select" required>
+              <option value="">Selecciona…</option>
+              <option value="CC">Cédula de ciudadanía</option>
+              <option value="TI">Tarjeta de identidad</option>
+              <option value="CE">Cédula de extranjería</option>
+              <option value="PAS">Pasaporte</option>
+            </select>
+          </div>
+          <div class="col-md-4 mb-2">
+            <label class="form-label">Número de documento</label>
+            <input type="text" id="numeroDocumento" class="form-control" required>
+          </div>
+          <div class="col-md-4 mb-2">
+            <label class="form-label">Fecha de nacimiento</label>
+            <input type="date" id="fechaNacimiento" class="form-control">
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <label class="form-label">Correo electrónico</label>
+            <input type="email" id="email" class="form-control">
+          </div>
+          <div class="col-md-6 mb-2">
+            <label class="form-label">Teléfono / Celular</label>
+            <input type="text" id="telefono" class="form-control">
+          </div>
+
+          <div class="col-md-6 mb-2">
+            <label class="form-label">Programa académico</label>
+            <input type="text" id="programa" class="form-control">
+          </div>
+          <div class="col-md-3 mb-2">
+            <label class="form-label">Semestre</label>
+            <input type="number" id="semestre" class="form-control" min="1" max="12">
+          </div>
+
+          <div class="col-md-3 mb-2">
+            <label class="form-label">Ciudad</label>
+            <input type="text" id="ciudad" class="form-control">
+          </div>
+          <div class="col-md-3 mb-2">
+            <label class="form-label">País</label>
+            <input type="text" id="pais" class="form-control">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mt-2">
+          <button type="button" class="btn-outline" onclick="cancelar()">Limpiar</button>
+          <button type="submit" class="btn-main">Guardar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card">
+      <div class="card-title">
+        <h2>Registros guardados</h2>
+        <div class="badge-soft">
+          <span class="dot"></span>
+          CRUD activo
+        </div>
+      </div>
+      <small>En esta tabla se muestran todos los registros almacenados en la base de datos.</small>
+
+      <div class="table-wrapper mt-3">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre completo</th>
+              <th>Programa</th>
+              <th>Documento</th>
+              <th>Contacto</th>
+              <th>Ubicación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <!-- filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "/api/sebastian";
+  let cache = [];
+
+  function cargarDatos(){
+    fetch(API_URL)
+      .then(r => r.json())
+      .then(data => {
+        cache = data;
+        const tbody = document.getElementById("tbody");
+        tbody.innerHTML = "";
+        data.forEach(reg => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.innerHTML = "<span class='chip-id'>#" + reg.id + "</span>";
+
+          const tdNombre = document.createElement("td");
+          tdNombre.innerHTML = (reg.nombres || "") + " " + (reg.apellidos || "");
+
+          const tdPrograma = document.createElement("td");
+          tdPrograma.innerHTML = "<span class='badge-tag'>" + (reg.programa || "—") + "</span>";
+
+          const tdDoc = document.createElement("td");
+          const tipo = reg.tipoDocumento || "—";
+          const num = reg.numeroDocumento || "—";
+          tdDoc.textContent = tipo + " " + num;
+
+          const tdContacto = document.createElement("td");
+          const tel = reg.telefono || "—";
+          const email = reg.email || "—";
+          tdContacto.innerHTML = "<div>" + tel + "</div><div style='color:#9ca3af;font-size:0.72rem;'>" + email + "</div>";
+
+          const tdUbi = document.createElement("td");
+          const ciudad = reg.ciudad || "—";
+          const pais = reg.pais || "—";
+          tdUbi.textContent = ciudad + " - " + pais;
+
+          const tdAcciones = document.createElement("td");
+          tdAcciones.className = "actions text-nowrap";
+          tdAcciones.innerHTML =
+            "<button class='btn-edit' onclick='editar(" + reg.id + ")'>Editar</button>" +
+            "<button class='btn-delete' onclick='eliminarReg(" + reg.id + ")'>Eliminar</button>";
+
+          tr.appendChild(tdId);
+          tr.appendChild(tdNombre);
+          tr.appendChild(tdPrograma);
+          tr.appendChild(tdDoc);
+          tr.appendChild(tdContacto);
+          tr.appendChild(tdUbi);
+          tr.appendChild(tdAcciones);
+
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        console.error("Error al cargar datos", err);
+      });
+  }
+
+  function guardar(event){
+    event.preventDefault();
+
+    const id = document.getElementById("id").value;
+
+    const payload = {
+      nombres: document.getElementById("nombres").value.trim(),
+      apellidos: document.getElementById("apellidos").value.trim(),
+      tipoDocumento: document.getElementById("tipoDocumento").value,
+      numeroDocumento: document.getElementById("numeroDocumento").value.trim(),
+      fechaNacimiento: document.getElementById("fechaNacimiento").value || null,
+      email: document.getElementById("email").value.trim(),
+      telefono: document.getElementById("telefono").value.trim(),
+      programa: document.getElementById("programa").value.trim(),
+      semestre: document.getElementById("semestre").value ? parseInt(document.getElementById("semestre").value,10) : null,
+      ciudad: document.getElementById("ciudad").value.trim(),
+      pais: document.getElementById("pais").value.trim()
+    };
+
+    const options = {
+      method: id ? "PUT" : "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    };
+
+    const url = id ? `${API_URL}/${id}` : API_URL;
+
+    fetch(url, options)
+      .then(r => r.json())
+      .then(() => {
+        cancelar();
+        cargarDatos();
+      })
+      .catch(err => console.error("Error al guardar", err));
+  }
+
+  function editar(id){
+    const reg = cache.find(r => r.id === id);
+    if(!reg) return;
+
+    document.getElementById("id").value = reg.id;
+    document.getElementById("nombres").value = reg.nombres || "";
+    document.getElementById("apellidos").value = reg.apellidos || "";
+    document.getElementById("tipoDocumento").value = reg.tipoDocumento || "";
+    document.getElementById("numeroDocumento").value = reg.numeroDocumento || "";
+    document.getElementById("fechaNacimiento").value = reg.fechaNacimiento || "";
+    document.getElementById("email").value = reg.email || "";
+    document.getElementById("telefono").value = reg.telefono || "";
+    document.getElementById("programa").value = reg.programa || "";
+    document.getElementById("semestre").value = reg.semestre || "";
+    document.getElementById("ciudad").value = reg.ciudad || "";
+    document.getElementById("pais").value = reg.pais || "";
+  }
+
+  function eliminarReg(id){
+    if(!confirm("¿Seguro que deseas eliminar este registro?")) return;
+    fetch(`${API_URL}/${id}`, { method: "DELETE" })
+      .then(() => cargarDatos())
+      .catch(err => console.error("Error al eliminar", err));
+  }
+
+  function cancelar(){
+    document.getElementById("wendyForm").reset();
+    document.getElementById("id").value = "";
+  }
+
+  document.addEventListener("DOMContentLoaded", cargarDatos);
+</script>
+
+</body>
+</html>
